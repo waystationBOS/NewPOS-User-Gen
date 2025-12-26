@@ -1,0 +1,103 @@
+// MD5 hash with zero-stripping logic
+function makeMD5Hash(data) {
+    var hash = CryptoJS.MD5(data).toString(CryptoJS.enc.Hex);
+    var zeroPassword = '';
+    var workPassword = '';
+
+    if (hash.length % 2 !== 0) {
+        workPassword = '0';
+    }
+    workPassword += hash;
+
+    for (var i = 0; i < workPassword.length; i++) {
+        if (i % 2 === 0) {
+            if (workPassword[i] !== '0') {
+                zeroPassword += workPassword[i];
+            }
+        } else {
+            zeroPassword += workPassword[i];
+        }
+    }
+    return zeroPassword;
+}
+
+// HMAC-MD5 password generator
+function makeEncryptedPassword(uid, password) {
+    var hmac = CryptoJS.HmacMD5(uid, password).toString(CryptoJS.enc.Hex);
+    var zeroPassword = '';
+    var workPassword = '';
+
+    if (hmac.length % 2 !== 0) {
+        workPassword = '0';
+    }
+    workPassword += hmac;
+
+    for (var i = 0; i < workPassword.length; i++) {
+        if (i % 2 === 0) {
+            if (workPassword[i] !== '0') {
+                zeroPassword += workPassword[i];
+            }
+        } else {
+            zeroPassword += workPassword[i];
+        }
+    }
+    return zeroPassword;
+}
+
+// Build the final security line
+function makeSecurityLine(badgeNumber, emplName, password, jobCode) {
+    var encryptedPassword = makeEncryptedPassword(
+        badgeNumber.toString(),
+        password.toString()
+    );
+
+    var firstHalf =
+        badgeNumber + ',' +
+        emplName.toLowerCase() + ',' +
+        jobCode + ',99991231,' +
+        encryptedPassword + ',';
+
+    var hash = makeMD5Hash(firstHalf);
+    return firstHalf + hash;
+}
+
+// Validate inputs and generate output
+function generateSecurityLine() {
+    var badgeNumber = document.getElementById('badge').value.trim();
+    var emplName = document.getElementById('name').value.trim();
+    var password = document.getElementById('password').value.trim();
+    var jobCode = document.getElementById('job').value;
+
+    // Badge number validation
+    if (!/^\d{1,10}$/.test(badgeNumber)) {
+        alert('Badge number must be numeric (max 10 digits)');
+        return;
+    }
+
+    // Name validation
+    if (!/^[a-zA-Z ]{1,25}$/.test(emplName)) {
+        alert('Name must contain letters only (max 25 characters)');
+        return;
+    }
+
+    // Password validation
+    if (!/^\d{1,10}$/.test(password)) {
+        alert('Password must be numeric (max 10 digits)');
+        return;
+    }
+
+    // Job code validation
+    if (!['0', '86', '88'].includes(jobCode)) {
+        alert('Invalid job code');
+        return;
+    }
+
+    var result = makeSecurityLine(
+        badgeNumber,
+        emplName,
+        password,
+        jobCode
+    );
+
+    document.getElementById('output').textContent = result;
+}
