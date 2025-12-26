@@ -4,71 +4,172 @@
     <meta charset="UTF-8">
     <title>User Generator</title>
 
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
-            padding: 30px;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(135deg, #1d3557, #457b9d);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .container {
-            max-width: 420px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 6px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 420px;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
         }
 
         h2 {
             text-align: center;
+            margin-bottom: 20px;
+            color: #1d3557;
         }
 
-        input, select, button {
+        .field {
+            margin-bottom: 15px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            top: 50%;
+            left: 12px;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        input, select {
             width: 100%;
-            padding: 10px;
-            margin-top: 10px;
+            padding: 10px 10px 10px 38px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
             font-size: 14px;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: #457b9d;
+            box-shadow: 0 0 0 2px rgba(69,123,157,0.2);
         }
 
         button {
-            background: #007bff;
-            color: white;
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
             border: none;
+            border-radius: 6px;
+            background: #1d3557;
+            color: white;
+            font-size: 15px;
             cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button i {
+            margin-right: 8px;
         }
 
         button:hover {
-            background: #0056b3;
+            background: #457b9d;
         }
 
         pre {
-            background: #eee;
-            padding: 10px;
             margin-top: 15px;
-            white-space: pre-wrap;
+            padding: 12px;
+            background: #f1f3f5;
+            border-radius: 6px;
+            font-size: 13px;
             word-break: break-all;
+        }
+
+        .copy-btn {
+            background: #2a9d8f;
+            margin-top: 8px;
+        }
+
+        .copy-btn:hover {
+            background: #21867a;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 11px;
+            margin-top: 15px;
+            color: #888;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>User Generator</h2>
+    <h2><i class="fa-solid fa-user-shield"></i> User Generator</h2>
 
-    <input id="badge" placeholder="Badge Number">
-    <input id="name" placeholder="Employee Name">
-    <input id="password" placeholder="Password">
+    <div class="field">
+        <label>Badge Number</label>
+        <div class="input-wrapper">
+            <i class="fa-solid fa-id-badge"></i>
+            <input id="badge" placeholder="Numeric badge number">
+        </div>
+    </div>
 
-    <select id="job">
-        <option value="0">Crew</option>
-        <option value="86">Manager</option>
-        <option value="88">General Manager</option>
-    </select>
+    <div class="field">
+        <label>Employee Name</label>
+        <div class="input-wrapper">
+            <i class="fa-solid fa-user"></i>
+            <input id="name" placeholder="Employee full name">
+        </div>
+    </div>
 
-    <button onclick="generateSecurityLine()">Generate</button>
+    <div class="field">
+        <label>Password</label>
+        <div class="input-wrapper">
+            <i class="fa-solid fa-key"></i>
+            <input id="password" placeholder="Numeric password">
+        </div>
+    </div>
+
+    <div class="field">
+        <label>Job Code</label>
+        <div class="input-wrapper">
+            <i class="fa-solid fa-briefcase"></i>
+            <select id="job">
+                <option value="0">Crew</option>
+                <option value="86">Manager</option>
+                <option value="88">General Manager</option>
+            </select>
+        </div>
+    </div>
+
+    <button onclick="generateSecurityLine()">
+        <i class="fa-solid fa-gear"></i> Generate Security Line
+    </button>
 
     <pre id="output"></pre>
+
+    <button class="copy-btn" onclick="copyOutput()">
+        <i class="fa-solid fa-copy"></i> Copy to Clipboard
+    </button>
+
+    <footer>
+        Internal Use Tool
+    </footer>
 </div>
 
 <!-- CryptoJS -->
@@ -79,7 +180,6 @@ function makeMD5Hash(data) {
     var hash = CryptoJS.MD5(data).toString(CryptoJS.enc.Hex);
     var zeroPassword = '';
     var workPassword = '';
-
     if (hash.length % 2 !== 0) workPassword = '0';
     workPassword += hash;
 
@@ -97,7 +197,6 @@ function makeEncryptedPassword(uid, password) {
     var hmac = CryptoJS.HmacMD5(uid, password).toString(CryptoJS.enc.Hex);
     var zeroPassword = '';
     var workPassword = '';
-
     if (hmac.length % 2 !== 0) workPassword = '0';
     workPassword += hmac;
 
@@ -113,40 +212,31 @@ function makeEncryptedPassword(uid, password) {
 
 function makeSecurityLine(badgeNumber, emplName, password, jobCode) {
     var encryptedPassword = makeEncryptedPassword(badgeNumber, password);
-
     var firstHalf =
         badgeNumber + ',' +
         emplName.toLowerCase() + ',' +
         jobCode + ',99991231,' +
         encryptedPassword + ',';
-
-    var hash = makeMD5Hash(firstHalf);
-    return firstHalf + hash;
+    return firstHalf + makeMD5Hash(firstHalf);
 }
 
 function generateSecurityLine() {
-    var badge = document.getElementById('badge').value.trim();
-    var name = document.getElementById('name').value.trim();
+    var badge = badge.value.trim();
+    var name = name.value.trim();
     var password = document.getElementById('password').value.trim();
     var job = document.getElementById('job').value;
 
-    if (!/^\d{1,10}$/.test(badge)) {
-        alert('Badge number must be numeric (max 10 digits)');
-        return;
-    }
+    if (!/^\d{1,10}$/.test(badge)) return alert('Badge number must be numeric (max 10 digits)');
+    if (!/^[a-zA-Z ]{1,25}$/.test(name)) return alert('Name must be letters only (max 25 characters)');
+    if (!/^\d{1,10}$/.test(password)) return alert('Password must be numeric (max 10 digits)');
 
-    if (!/^[a-zA-Z ]{1,25}$/.test(name)) {
-        alert('Name must be letters only (max 25 characters)');
-        return;
-    }
+    output.textContent = makeSecurityLine(badge, name, password, job);
+}
 
-    if (!/^\d{1,10}$/.test(password)) {
-        alert('Password must be numeric (max 10 digits)');
-        return;
-    }
-
-    document.getElementById('output').textContent =
-        makeSecurityLine(badge, name, password, job);
+function copyOutput() {
+    if (!output.textContent) return;
+    navigator.clipboard.writeText(output.textContent);
+    alert('Copied to clipboard');
 }
 </script>
 
