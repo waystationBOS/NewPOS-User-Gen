@@ -9,6 +9,13 @@
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
     <style>
+        /* ✅ CRITICAL FIX: global box sizing */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: "Segoe UI", Arial, sans-serif;
             background: linear-gradient(135deg, #1d3557, #457b9d);
@@ -19,7 +26,8 @@
         }
 
         .container {
-            width: 420px;
+            width: 100%;
+            max-width: 420px;
             background: #ffffff;
             padding: 25px;
             border-radius: 10px;
@@ -57,7 +65,7 @@
 
         input, select {
             width: 100%;
-            padding: 10px 10px 10px 38px;
+            padding: 10px 12px 10px 38px;
             border-radius: 6px;
             border: 1px solid #ccc;
             font-size: 14px;
@@ -82,10 +90,6 @@
             transition: background 0.2s;
         }
 
-        button i {
-            margin-right: 8px;
-        }
-
         button:hover {
             background: #457b9d;
         }
@@ -101,7 +105,6 @@
 
         .copy-btn {
             background: #2a9d8f;
-            margin-top: 8px;
         }
 
         .copy-btn:hover {
@@ -167,9 +170,7 @@
         <i class="fa-solid fa-copy"></i> Copy to Clipboard
     </button>
 
-    <footer>
-        Internal Use Tool
-    </footer>
+    <footer>Internal Use Tool</footer>
 </div>
 
 <!-- CryptoJS -->
@@ -221,19 +222,21 @@ function makeSecurityLine(badgeNumber, emplName, password, jobCode) {
 }
 
 function generateSecurityLine() {
-    var badge = badge.value.trim();
-    var name = name.value.trim();
-    var password = document.getElementById('password').value.trim();
-    var job = document.getElementById('job').value;
+    const badge = document.getElementById('badge').value.trim();
+    const name = document.getElementById('name').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const job = document.getElementById('job').value;
 
     if (!/^\d{1,10}$/.test(badge)) return alert('Badge number must be numeric (max 10 digits)');
     if (!/^[a-zA-Z ]{1,25}$/.test(name)) return alert('Name must be letters only (max 25 characters)');
     if (!/^\d{1,10}$/.test(password)) return alert('Password must be numeric (max 10 digits)');
 
-    output.textContent = makeSecurityLine(badge, name, password, job);
+    document.getElementById('output').textContent =
+        makeSecurityLine(badge, name, password, job);
 }
 
 function copyOutput() {
+    const output = document.getElementById('output');
     if (!output.textContent) return;
     navigator.clipboard.writeText(output.textContent);
     alert('Copied to clipboard');
