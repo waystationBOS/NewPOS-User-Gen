@@ -1,19 +1,91 @@
-// MD5 hash with zero-stripping logic
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Generator</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 420px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 6px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        pre {
+            background: #eee;
+            padding: 10px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>User Generator</h2>
+
+    <input id="badge" placeholder="Badge Number">
+    <input id="name" placeholder="Employee Name">
+    <input id="password" placeholder="Password">
+
+    <select id="job">
+        <option value="0">Crew</option>
+        <option value="86">Manager</option>
+        <option value="88">General Manager</option>
+    </select>
+
+    <button onclick="generateSecurityLine()">Generate</button>
+
+    <pre id="output"></pre>
+</div>
+
+<!-- CryptoJS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+
+<script>
 function makeMD5Hash(data) {
     var hash = CryptoJS.MD5(data).toString(CryptoJS.enc.Hex);
     var zeroPassword = '';
     var workPassword = '';
 
-    if (hash.length % 2 !== 0) {
-        workPassword = '0';
-    }
+    if (hash.length % 2 !== 0) workPassword = '0';
     workPassword += hash;
 
     for (var i = 0; i < workPassword.length; i++) {
         if (i % 2 === 0) {
-            if (workPassword[i] !== '0') {
-                zeroPassword += workPassword[i];
-            }
+            if (workPassword[i] !== '0') zeroPassword += workPassword[i];
         } else {
             zeroPassword += workPassword[i];
         }
@@ -21,22 +93,17 @@ function makeMD5Hash(data) {
     return zeroPassword;
 }
 
-// HMAC-MD5 password generator
 function makeEncryptedPassword(uid, password) {
     var hmac = CryptoJS.HmacMD5(uid, password).toString(CryptoJS.enc.Hex);
     var zeroPassword = '';
     var workPassword = '';
 
-    if (hmac.length % 2 !== 0) {
-        workPassword = '0';
-    }
+    if (hmac.length % 2 !== 0) workPassword = '0';
     workPassword += hmac;
 
     for (var i = 0; i < workPassword.length; i++) {
         if (i % 2 === 0) {
-            if (workPassword[i] !== '0') {
-                zeroPassword += workPassword[i];
-            }
+            if (workPassword[i] !== '0') zeroPassword += workPassword[i];
         } else {
             zeroPassword += workPassword[i];
         }
@@ -44,12 +111,8 @@ function makeEncryptedPassword(uid, password) {
     return zeroPassword;
 }
 
-// Build the final security line
 function makeSecurityLine(badgeNumber, emplName, password, jobCode) {
-    var encryptedPassword = makeEncryptedPassword(
-        badgeNumber.toString(),
-        password.toString()
-    );
+    var encryptedPassword = makeEncryptedPassword(badgeNumber, password);
 
     var firstHalf =
         badgeNumber + ',' +
@@ -61,43 +124,31 @@ function makeSecurityLine(badgeNumber, emplName, password, jobCode) {
     return firstHalf + hash;
 }
 
-// Validate inputs and generate output
 function generateSecurityLine() {
-    var badgeNumber = document.getElementById('badge').value.trim();
-    var emplName = document.getElementById('name').value.trim();
+    var badge = document.getElementById('badge').value.trim();
+    var name = document.getElementById('name').value.trim();
     var password = document.getElementById('password').value.trim();
-    var jobCode = document.getElementById('job').value;
+    var job = document.getElementById('job').value;
 
-    // Badge number validation
-    if (!/^\d{1,10}$/.test(badgeNumber)) {
+    if (!/^\d{1,10}$/.test(badge)) {
         alert('Badge number must be numeric (max 10 digits)');
         return;
     }
 
-    // Name validation
-    if (!/^[a-zA-Z ]{1,25}$/.test(emplName)) {
-        alert('Name must contain letters only (max 25 characters)');
+    if (!/^[a-zA-Z ]{1,25}$/.test(name)) {
+        alert('Name must be letters only (max 25 characters)');
         return;
     }
 
-    // Password validation
     if (!/^\d{1,10}$/.test(password)) {
         alert('Password must be numeric (max 10 digits)');
         return;
     }
 
-    // Job code validation
-    if (!['0', '86', '88'].includes(jobCode)) {
-        alert('Invalid job code');
-        return;
-    }
-
-    var result = makeSecurityLine(
-        badgeNumber,
-        emplName,
-        password,
-        jobCode
-    );
-
-    document.getElementById('output').textContent = result;
+    document.getElementById('output').textContent =
+        makeSecurityLine(badge, name, password, job);
 }
+</script>
+
+</body>
+</html>
