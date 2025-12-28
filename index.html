@@ -9,10 +9,8 @@
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
     <style>
-        /* ✅ CRITICAL FIX: global box sizing */
-        *,
-        *::before,
-        *::after {
+        /* Global Reset */
+        *, *::before, *::after {
             box-sizing: border-box;
         }
 
@@ -23,6 +21,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
 
         .container {
@@ -30,7 +29,7 @@
             max-width: 420px;
             background: #ffffff;
             padding: 25px;
-            border-radius: 10px;
+            border-radius: 12px;
             box-shadow: 0 15px 40px rgba(0,0,0,0.2);
         }
 
@@ -38,6 +37,7 @@
             text-align: center;
             margin-bottom: 20px;
             color: #1d3557;
+            font-weight: 700;
         }
 
         .field {
@@ -49,6 +49,7 @@
             font-size: 13px;
             margin-bottom: 5px;
             color: #555;
+            font-weight: 600;
         }
 
         .input-wrapper {
@@ -88,19 +89,11 @@
             font-size: 15px;
             cursor: pointer;
             transition: background 0.2s;
+            font-weight: 600;
         }
 
         button:hover {
             background: #457b9d;
-        }
-
-        pre {
-            margin-top: 15px;
-            padding: 12px;
-            background: #f1f3f5;
-            border-radius: 6px;
-            font-size: 13px;
-            word-break: break-all;
         }
 
         .copy-btn {
@@ -109,6 +102,30 @@
 
         .copy-btn:hover {
             background: #21867a;
+        }
+
+        .output-label {
+            margin-top: 18px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #1d3557;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        pre {
+            margin-top: 6px;
+            padding: 14px 16px;
+            background: #f1f3f5;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: Consolas, monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
         }
 
         footer {
@@ -164,6 +181,7 @@
         <i class="fa-solid fa-gear"></i> Generate Security Line
     </button>
 
+    <div class="output-label">Generated Security Line</div>
     <pre id="output"></pre>
 
     <button class="copy-btn" onclick="copyOutput()">
