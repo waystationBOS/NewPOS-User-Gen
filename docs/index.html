@@ -2,184 +2,363 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>NewPOS61 User Generator</title>
+<title>User Generator</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
 <style>
 *, *::before, *::after { box-sizing: border-box; }
+
 :root {
-  --bg:#eef2f7;--card:#fff;--text:#1d3557;--sub:#555;--border:#d9e1e8;
-  --input:#fff;--outbg:#f8fafc;--shadow:rgba(0,0,0,.15);
+  --bg: #eef2f7;
+  --card: #ffffff;
+  --text: #1d3557;
+  --subtext: #333;
+  --border: #d9e1e8;
+  --input-bg: #ffffff;
+  --output-bg: #f8fafc;
+  --shadow: rgba(0,0,0,0.12);
 }
+
 body.dark {
-  --bg:#0f1116;--card:#1b1d24;--text:#e8ecf2;--sub:#bbb;--border:#2a2f38;
-  --input:#1f222a;--outbg:#16181d;--shadow:rgba(0,0,0,.5);
+  --bg: #0f1116;
+  --card: #1a1d24;
+  --text: #e8ecf2;
+  --subtext: #c7cbd1;
+  --border: #2a2f38;
+  --input-bg: #1f222a;
+  --output-bg: #16181d;
+  --shadow: rgba(0,0,0,0.5);
 }
+
 body {
-  background:var(--bg);color:var(--text);font-family:Segoe UI,Arial,sans-serif;
-  min-height:100vh;display:flex;align-items:center;justify-content:center;
-  transition:.3s;padding:20px;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: var(--text);
+  transition: background .3s, color .3s;
 }
 
-/* 🔥 FIXED Toggle */
-#themeToggle{
-  position:fixed;top:20px;right:20px;background:var(--card);border:1px solid var(--border);
-  padding:6px 12px;border-radius:20px;font-size:14px;font-weight:600;
-  display:inline-flex;align-items:center;gap:6px;cursor:pointer;width:auto;
-  white-space:nowrap;box-shadow:0 5px 12px var(--shadow);z-index:9999;
+/* 🌗 Pill Toggle */
+#themeToggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px var(--shadow);
+  transition: .3s;
+  white-space: nowrap;
+}
+#themeToggle i { font-size: 16px; }
+
+/* Main Card */
+.container {
+  width: 100%;
+  max-width: 460px;
+  background: var(--card);
+  padding: 28px;
+  border-radius: 14px;
+  box-shadow: 0 12px 35px var(--shadow);
+  animation: fadeIn .4s ease;
 }
 
-.container{
-  width:100%;max-width:500px;background:var(--card);border-radius:12px;
-  padding:28px;box-shadow:0 10px 30px var(--shadow);
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-h2{text-align:center;margin-bottom:22px}
-
-.field label{font-size:13px;font-weight:600;margin-bottom:5px;display:block;color:var(--sub);}
-.input-wrapper{position:relative;}
-.input-wrapper i{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.5;}
-input,select{
-  width:100%;padding:11px 12px 11px 38px;border-radius:8px;border:1px solid var(--border);
-  background:var(--input);color:var(--text);
+/* Form Fields */
+.field { margin-bottom: 18px; }
+.field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--subtext);
+  margin-bottom: 6px;
+  display: block;
 }
 
-button{
-  width:100%;padding:13px;border-radius:8px;border:none;font-weight:600;color:#fff;
-  margin-top:10px;cursor:pointer;
-}
-button:hover{opacity:.85;}
-
-.copy-btn{background:#2a9d8f;}
-.history-btn{background:#6c5ce7;}
-.generate-btn{background:#1d3557;}
-
-pre{
-  background:var(--outbg);padding:12px;border-radius:8px;min-height:70px;
-  border:1px solid var(--border);margin-top:10px;
+.input-wrapper { position: relative; }
+.input-wrapper i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
 }
 
-/*** History Panel ***/
-#historyPanel{
-  position:fixed;top:0;right:-380px;width:350px;height:100%;background:var(--card);
-  border-left:1px solid var(--border);padding:20px;transition:.3s;overflow-y:auto;
+input, select {
+  width: 100%;
+  padding: 11px 12px 11px 38px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text);
+  font-size: 14px;
 }
-#historyPanel.open{right:0;}
-.history-item{background:var(--outbg);padding:10px;border-radius:8px;margin-bottom:10px;border:1px solid var(--border);}
-.history-actions{display:flex;gap:6px;margin-top:6px;}
-.history-actions button{flex:1;padding:6px;border-radius:6px;color:#fff;font-size:12px;}
+input:focus, select:focus {
+  border-color: #457b9d;
+  box-shadow: 0 0 0 2px rgba(69,123,157,.25);
+}
 
-#toast{
-  position:fixed;bottom:25px;right:25px;background:#2a9d8f;color:white;
-  padding:10px 16px;border-radius:6px;opacity:0;transition:.3s;
+/* Buttons */
+button {
+  width: 100%;
+  padding: 13px;
+  margin-top: 12px;
+  border-radius: 8px;
+  border: none;
+  background: #1d3557;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
 }
-#toast.show{opacity:1;}
+button:hover { background: #274b7a; }
+
+.copy-btn { background: #2a9d8f; }
+.copy-btn:hover { background: #21867a; }
+
+.history-btn { background: #6c5ce7; }
+.history-btn:hover { background: #5846d6; }
+
+/* Output Box */
+pre {
+  margin-top: 8px;
+  padding: 16px;
+  background: var(--output-bg);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  white-space: pre-wrap;
+  max-height: 220px;
+  overflow: auto;
+  font-family: Consolas, monospace;
+  font-size: 13px;
+}
+
+/* History Panel */
+#historyPanel {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 350px;
+  height: 100%;
+  background: var(--card);
+  border-left: 1px solid var(--border);
+  padding: 20px;
+  box-shadow: -5px 0 20px var(--shadow);
+  transition: .3s;
+  overflow-y: auto;
+  z-index: 9998;
+}
+#historyPanel.open { right: 0; }
+
+.history-item {
+  background: var(--output-bg);
+  border: 1px solid var(--border);
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-family: Consolas, monospace;
+}
+
+/* Toast */
+#toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #2a9d8f;
+  padding: 10px 16px;
+  border-radius: 6px;
+  color: #fff;
+  opacity: 0;
+  transition: .3s;
+}
+#toast.show { opacity: 1; }
 </style>
 </head>
 
 <body>
+
+<!-- 🌗 Dark Mode Toggle -->
 <button id="themeToggle"><i class="fa-solid fa-moon"></i> Dark</button>
 
 <div class="container">
+
 <h2><i class="fa-solid fa-user-shield"></i> NewPOS61 User Generator</h2>
 
-<div class="field"><label>Badge Number</label>
-<div class="input-wrapper"><i class="fa-solid fa-id-badge"></i>
-<input id="badge" placeholder="Employee badge #" maxlength="10"></div></div>
+<div class="field">
+  <label>Badge Number</label>
+  <div class="input-wrapper">
+    <i class="fa-solid fa-id-badge"></i>
+    <input id="badge">
+  </div>
+</div>
 
-<div class="field"><label>Employee Name</label>
-<div class="input-wrapper"><i class="fa-solid fa-user"></i>
-<input id="name" placeholder="Full name" maxlength="25"></div></div>
+<div class="field">
+  <label>Name</label>
+  <div class="input-wrapper">
+    <i class="fa-solid fa-user"></i>
+    <input id="empName">
+  </div>
+</div>
 
-<div class="field"><label>Password</label>
-<div class="input-wrapper"><i class="fa-solid fa-key"></i>
-<input id="password" placeholder="Numeric password" maxlength="10"></div></div>
+<div class="field">
+  <label>Password</label>
+  <div class="input-wrapper">
+    <i class="fa-solid fa-key"></i>
+    <input id="password">
+  </div>
+</div>
 
-<div class="field"><label>Job Code</label>
-<div class="input-wrapper"><i class="fa-solid fa-briefcase"></i>
-<select id="job"><option value="0">Crew</option><option value="86">Manager</option><option value="88">General Manager</option></select>
-</div></div>
+<div class="field">
+  <label>Job Code</label>
+  <div class="input-wrapper">
+    <i class="fa-solid fa-briefcase"></i>
+    <select id="job">
+      <option value="0">Crew</option>
+      <option value="86">Manager</option>
+      <option value="88">GM</option>
+    </select>
+  </div>
+</div>
 
-<button class="generate-btn" onclick="generateSecurityLine()"><i class="fa-solid fa-gear"></i> Generate Security Line</button>
-<button class="history-btn" onclick="toggleHistory()"><i class="fa-solid fa-clock-rotate-left"></i> History</button>
+<button onclick="generateSecurityLine()">
+  <i class="fa-solid fa-gear"></i> Generate
+</button>
 
+<button class="history-btn" onclick="toggleHistory()">
+  <i class="fa-solid fa-clock-rotate-left"></i> History
+</button>
+
+<div class="output-label" style="margin-top:20px;font-weight:700;">OUTPUT</div>
 <pre id="output"></pre>
-<button class="copy-btn" onclick="copyOutput()"><i class="fa-solid fa-copy"></i> Copy</button>
+
+<button class="copy-btn" onclick="copyOutput()">
+  <i class="fa-solid fa-copy"></i> Copy
+</button>
+
+<footer style="text-align:center;margin-top:8px;font-size:11px;">
+  Internal Use Tool
+</footer>
+
 </div>
 
 <div id="historyPanel"></div>
 <div id="toast">Copied!</div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
 
 <script>
-/* 🌙 THEME FIX */
+/* 🌗 DARK MODE */
 (function(){
-  const saved=localStorage.getItem("theme");
-  if(saved) document.body.classList.toggle("dark",saved==="dark");
-  else document.body.classList.toggle("dark",window.matchMedia("(prefers-color-scheme: dark)").matches);
-  updateLabel();
+  const saved = localStorage.getItem("theme");
+  document.body.classList.toggle("dark", saved === "dark");
+  updateToggleLabel();
 })();
-function updateLabel(){
-  const d=document.body.classList.contains("dark");
-  themeToggle.innerHTML=d?'<i class="fa-solid fa-sun"></i> Light':'<i class="fa-solid fa-moon"></i> Dark';
+function updateToggleLabel(){
+  const d = document.body.classList.contains("dark");
+  themeToggle.innerHTML = d
+    ? '<i class="fa-solid fa-sun"></i> Light'
+    : '<i class="fa-solid fa-moon"></i> Dark';
 }
-themeToggle.onclick=()=>{document.body.classList.toggle("dark");
-localStorage.setItem("theme",document.body.classList.contains("dark")?"dark":"light");updateLabel();};
+themeToggle.onclick = () => {
+  document.body.classList.toggle("dark");
+  localStorage.setItem("theme",
+    document.body.classList.contains("dark") ? "dark" : "light"
+  );
+  updateToggleLabel();
+};
 
-/* 🔐 HASH FUNCTIONS (From your usergen.js) */
+/* 🔐 SECURITY ENGINE */
 function makeMD5Hash(data){
-  let h=CryptoJS.MD5(data).toString();
-  let out='',w=(h.length%2?'0':'')+h;
-  for(let i=0;i<w.length;i++) if(!(i%2===0&&w[i]==='0')) out+=w[i];
-  return out;
+  let h = CryptoJS.MD5(data).toString(), o = '', w = (h.length%2?'0':'') + h;
+  for(let i=0;i<w.length;i++){ if(!(i%2===0 && w[i]==='0')) o+=w[i]; }
+  return o;
 }
-function makeEncryptedPassword(uid,password){
-  let h=CryptoJS.HmacMD5(uid,password).toString();
-  let out='',w=(h.length%2?'0':'')+h;
-  for(let i=0;i<w.length;i++) if(!(i%2===0&&w[i]==='0')) out+=w[i];
-  return out;
+function makeEncryptedPassword(u,p){
+  let h = CryptoJS.HmacMD5(u,p).toString(), o = '', w = (h.length%2?'0':'') + h;
+  for(let i=0;i<w.length;i++){ if(!(i%2===0 && w[i]==='0')) o+=w[i]; }
+  return o;
 }
 function makeSecurityLine(b,n,p,j){
-  let e=makeEncryptedPassword(b,p);
-  let base=`${b},${n.toLowerCase()},${j},99991231,${e},`;
-  return base+makeMD5Hash(base);
+  let e = makeEncryptedPassword(b,p);
+  let base = `${b},${n.toLowerCase()},${j},99991231,${e},`;
+  return base + makeMD5Hash(base);
 }
 
-/* 🎯 GENERATE BUTTON */
+/* 🚀 GENERATE */
 function generateSecurityLine(){
-  const b=badge.value.trim(), n=name.value.trim(), p=password.value.trim(), j=job.value;
-  if(!/^\d{1,10}$/.test(b)) return alert("Badge must be up to 10 digits.");
-  if(!/^[A-Za-z ]{1,25}$/.test(n)) return alert("Name letters only, max 25.");
-  if(!/^\d{1,10}$/.test(p)) return alert("Password digits only, max 10.");
-  const line=makeSecurityLine(b,n,p,j);
-  output.textContent=line;
+  const b = document.getElementById("badge").value.trim();
+  const n = document.getElementById("empName").value.trim();
+  const p = document.getElementById("password").value.trim();
+  const j = document.getElementById("job").value;
+
+  if(!/^\d{1,10}$/.test(b)) return alert("Invalid badge");
+  if(!/^[A-Za-z ]{1,25}$/.test(n)) return alert("Invalid name");
+  if(!/^\d{1,10}$/.test(p)) return alert("Invalid password");
+
+  const line = makeSecurityLine(b,n,p,j);
+  output.textContent = line;
   addToHistory(line);
+  showToast("Generated!");
 }
 
 /* 📋 COPY */
-function copyOutput(){if(!output.textContent)return;
-navigator.clipboard.writeText(output.textContent);toast();}
+function copyOutput(){
+  if(output.textContent){
+    navigator.clipboard.writeText(output.textContent);
+    showToast("Copied!");
+  }
+}
 
 /* 🧾 HISTORY */
-function loadHistory(){return JSON.parse(localStorage.getItem("history")||"[]");}
-function saveHistory(x){localStorage.setItem("history",JSON.stringify(x));}
-function addToHistory(t){let l=loadHistory();l.unshift({text:t,time:new Date().toLocaleString()});saveHistory(l);}
+function loadHistory(){ return JSON.parse(localStorage.getItem("history") || "[]"); }
+function saveHistory(x){ localStorage.setItem("history", JSON.stringify(x)); }
+function addToHistory(t){
+  let l = loadHistory();
+  l.unshift({text:t, time:new Date().toLocaleString()});
+  saveHistory(l);
+}
+function toggleHistory(){
+  historyPanel.classList.toggle("open");
+  renderHistory();
+}
 function renderHistory(){
-  let l=loadHistory(),p=historyPanel;
-  p.innerHTML='<h3>History</h3>'+(!l.length?'<p>None yet</p>':'');
-  l.forEach((x,i)=>p.innerHTML+=`
-  <div class="history-item">
-  <strong>${x.text}</strong><br><small>${x.time}</small>
-  <div class="history-actions">
-  <button onclick="navigator.clipboard.writeText('${x.text}')">Copy</button>
-  <button style="background:#e63946" onclick="deleteHistory(${i})">Delete</button>
-  </div></div>`);}
-function toggleHistory(){historyPanel.classList.toggle("open");renderHistory();}
-function deleteHistory(i){let l=loadHistory();l.splice(i,1);saveHistory(l);renderHistory();}
+  let l = loadHistory(), h = '<h3>History</h3>';
+  if(!l.length) h += "<p>None yet</p>";
+  l.forEach((x,i)=>h+=`
+    <div class="history-item">
+      ${x.text}<br><small>${x.time}</small><br>
+      <button onclick="navigator.clipboard.writeText('${x.text}')">Copy</button>
+      <button style="background:#e63946" onclick="deleteHistory(${i})">Delete</button>
+    </div>`);
+  historyPanel.innerHTML = h;
+}
+function deleteHistory(i){
+  let l = loadHistory();
+  l.splice(i,1);
+  saveHistory(l);
+  renderHistory();
+}
 
 /* 🍞 TOAST */
-function toast(){toastEl.classList;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1200);}
+function showToast(t){
+  toast.textContent = t;
+  toast.classList.add("show");
+  setTimeout(()=>toast.classList.remove("show"),1200);
+}
 </script>
 
 </body>
