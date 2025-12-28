@@ -4,19 +4,17 @@
     <meta charset="UTF-8">
     <title>User Generator</title>
 
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
     <style>
-        /* Global Reset */
         *, *::before, *::after {
             box-sizing: border-box;
         }
 
         body {
             font-family: "Segoe UI", Arial, sans-serif;
-            background: linear-gradient(135deg, #1d3557, #457b9d);
+            background: #eef2f7;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -26,29 +24,36 @@
 
         .container {
             width: 100%;
-            max-width: 420px;
+            max-width: 460px;
             background: #ffffff;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+            padding: 28px;
+            border-radius: 14px;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         h2 {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             color: #1d3557;
+            font-size: 22px;
             font-weight: 700;
         }
 
         .field {
-            margin-bottom: 15px;
+            margin-bottom: 18px;
         }
 
         .field label {
             display: block;
             font-size: 13px;
-            margin-bottom: 5px;
-            color: #555;
+            margin-bottom: 6px;
+            color: #333;
             font-weight: 600;
         }
 
@@ -61,39 +66,40 @@
             top: 50%;
             left: 12px;
             transform: translateY(-50%);
-            color: #999;
+            color: #888;
         }
 
         input, select {
             width: 100%;
-            padding: 10px 12px 10px 38px;
-            border-radius: 6px;
+            padding: 11px 12px 11px 38px;
+            border-radius: 8px;
             border: 1px solid #ccc;
             font-size: 14px;
             outline: none;
+            transition: 0.2s;
         }
 
         input:focus, select:focus {
-            border-color: #457b9d;
-            box-shadow: 0 0 0 2px rgba(69,123,157,0.2);
+            border-color: #1d3557;
+            box-shadow: 0 0 0 2px rgba(29,53,87,0.15);
         }
 
         button {
             width: 100%;
-            padding: 12px;
-            margin-top: 10px;
+            padding: 13px;
+            margin-top: 12px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             background: #1d3557;
             color: white;
             font-size: 15px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: 0.2s;
             font-weight: 600;
         }
 
         button:hover {
-            background: #457b9d;
+            background: #274b7a;
         }
 
         .copy-btn {
@@ -105,7 +111,7 @@
         }
 
         .output-label {
-            margin-top: 18px;
+            margin-top: 22px;
             font-size: 12px;
             font-weight: 700;
             color: #1d3557;
@@ -114,25 +120,44 @@
         }
 
         pre {
-            margin-top: 6px;
-            padding: 14px 16px;
-            background: #f1f3f5;
-            border-radius: 6px;
+            margin-top: 8px;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 8px;
             font-size: 13px;
             font-family: Consolas, monospace;
             white-space: pre-wrap;
             word-wrap: break-word;
             overflow-x: auto;
-            max-height: 200px;
+            max-height: 220px;
             overflow-y: auto;
-            border: 1px solid #ddd;
+            border: 1px solid #d9e1e8;
         }
 
         footer {
             text-align: center;
             font-size: 11px;
-            margin-top: 15px;
-            color: #888;
+            margin-top: 18px;
+            color: #777;
+        }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: #2a9d8f;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 6px;
+            font-size: 14px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #toast.show {
+            opacity: 1;
         }
     </style>
 </head>
@@ -191,7 +216,8 @@
     <footer>Internal Use Tool</footer>
 </div>
 
-<!-- CryptoJS -->
+<div id="toast">Copied!</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
 
 <script>
@@ -254,10 +280,17 @@ function generateSecurityLine() {
 }
 
 function copyOutput() {
-    const output = document.getElementById('output');
-    if (!output.textContent) return;
-    navigator.clipboard.writeText(output.textContent);
-    alert('Copied to clipboard');
+    const output = document.getElementById('output').textContent;
+    if (!output) return;
+
+    navigator.clipboard.writeText(output);
+
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 1500);
 }
 </script>
 
