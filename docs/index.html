@@ -29,7 +29,6 @@ body {
   justify-content: center;
   padding: 20px;
   color: var(--text);
-  transition: background .3s, color .3s;
 }
 
 /* Main Card */
@@ -110,6 +109,8 @@ pre {
   border-radius: 8px;
   border: 1px solid var(--border);
   white-space: pre-wrap;
+  overflow-wrap: anywhere;   /* NEW: wraps long lines */
+  word-break: break-all;     /* NEW: ensures no overflow */
   max-height: 220px;
   overflow: auto;
   font-family: Consolas, monospace;
