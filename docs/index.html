@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NewPOS61 User Generator</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+:root {
+  --bg:#eef2f7;--card:#fff;--text:#1d3557;--sub:#555;--border:#d9e1e8;
+  --input:#fff;--outbg:#f8fafc;--shadow:rgba(0,0,0,.15);
+}
+body.dark {
+  --bg:#0f1116;--card:#1b1d24;--text:#e8ecf2;--sub:#bbb;--border:#2a2f38;
+  --input:#1f222a;--outbg:#16181d;--shadow:rgba(0,0,0,.5);
+}
+body {
+  background:var(--bg);color:var(--text);font-family:Segoe UI,Arial,sans-serif;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  transition:.3s;padding:20px;
+}
+
+/* 🔥 FIXED Toggle */
+#themeToggle{
+  position:fixed;top:20px;right:20px;background:var(--card);border:1px solid var(--border);
+  padding:6px 12px;border-radius:20px;font-size:14px;font-weight:600;
+  display:inline-flex;align-items:center;gap:6px;cursor:pointer;width:auto;
+  white-space:nowrap;box-shadow:0 5px 12px var(--shadow);z-index:9999;
+}
+
+.container{
+  width:100%;max-width:500px;background:var(--card);border-radius:12px;
+  padding:28px;box-shadow:0 10px 30px var(--shadow);
+}
+
+h2{text-align:center;margin-bottom:22px}
+
+.field label{font-size:13px;font-weight:600;margin-bottom:5px;display:block;color:var(--sub);}
+.input-wrapper{position:relative;}
+.input-wrapper i{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.5;}
+input,select{
+  width:100%;padding:11px 12px 11px 38px;border-radius:8px;border:1px solid var(--border);
+  background:var(--input);color:var(--text);
+}
+
+button{
+  width:100%;padding:13px;border-radius:8px;border:none;font-weight:600;color:#fff;
+  margin-top:10px;cursor:pointer;
+}
+button:hover{opacity:.85;}
+
+.copy-btn{background:#2a9d8f;}
+.history-btn{background:#6c5ce7;}
+.generate-btn{background:#1d3557;}
+
+pre{
+  background:var(--outbg);padding:12px;border-radius:8px;min-height:70px;
+  border:1px solid var(--border);margin-top:10px;
+}
+
+/*** History Panel ***/
+#historyPanel{
+  position:fixed;top:0;right:-380px;width:350px;height:100%;background:var(--card);
+  border-left:1px solid var(--border);padding:20px;transition:.3s;overflow-y:auto;
+}
+#historyPanel.open{right:0;}
+.history-item{background:var(--outbg);padding:10px;border-radius:8px;margin-bottom:10px;border:1px solid var(--border);}
+.history-actions{display:flex;gap:6px;margin-top:6px;}
+.history-actions button{flex:1;padding:6px;border-radius:6px;color:#fff;font-size:12px;}
+
+#toast{
+  position:fixed;bottom:25px;right:25px;background:#2a9d8f;color:white;
+  padding:10px 16px;border-radius:6px;opacity:0;transition:.3s;
+}
+#toast.show{opacity:1;}
+</style>
+</head>
+
+<body>
+<button id="themeToggle"><i class="fa-solid fa-moon"></i> Dark</button>
+
+<div class="container">
+<h2><i class="fa-solid fa-user-shield"></i> NewPOS61 User Generator</h2>
+
+<div class="field"><label>Badge Number</label>
+<div class="input-wrapper"><i class="fa-solid fa-id-badge"></i>
+<input id="badge" placeholder="Employee badge #" maxlength="10"></div></div>
+
+<div class="field"><label>Employee Name</label>
+<div class="input-wrapper"><i class="fa-solid fa-user"></i>
+<input id="name" placeholder="Full name" maxlength="25"></div></div>
+
+<div class="field"><label>Password</label>
+<div class="input-wrapper"><i class="fa-solid fa-key"></i>
+<input id="password" placeholder="Numeric password" maxlength="10"></div></div>
+
+<div class="field"><label>Job Code</label>
+<div class="input-wrapper"><i class="fa-solid fa-briefcase"></i>
+<select id="job"><option value="0">Crew</option><option value="86">Manager</option><option value="88">General Manager</option></select>
+</div></div>
+
+<button class="generate-btn" onclick="generateSecurityLine()"><i class="fa-solid fa-gear"></i> Generate Security Line</button>
+<button class="history-btn" onclick="toggleHistory()"><i class="fa-solid fa-clock-rotate-left"></i> History</button>
+
+<pre id="output"></pre>
+<button class="copy-btn" onclick="copyOutput()"><i class="fa-solid fa-copy"></i> Copy</button>
+</div>
+
+<div id="historyPanel"></div>
+<div id="toast">Copied!</div>
+
+
+<script>
+/* 🌙 THEME FIX */
+(function(){
+  const saved=localStorage.getItem("theme");
+  if(saved) document.body.classList.toggle("dark",saved==="dark");
+  else document.body.classList.toggle("dark",window.matchMedia("(prefers-color-scheme: dark)").matches);
+  updateLabel();
+})();
+function updateLabel(){
+  const d=document.body.classList.contains("dark");
+  themeToggle.innerHTML=d?'<i class="fa-solid fa-sun"></i> Light':'<i class="fa-solid fa-moon"></i> Dark';
+}
+themeToggle.onclick=()=>{document.body.classList.toggle("dark");
+localStorage.setItem("theme",document.body.classList.contains("dark")?"dark":"light");updateLabel();};
+
+/* 🔐 HASH FUNCTIONS (From your usergen.js) */
+function makeMD5Hash(data){
+  let h=CryptoJS.MD5(data).toString();
+  let out='',w=(h.length%2?'0':'')+h;
+  for(let i=0;i<w.length;i++) if(!(i%2===0&&w[i]==='0')) out+=w[i];
+  return out;
+}
+function makeEncryptedPassword(uid,password){
+  let h=CryptoJS.HmacMD5(uid,password).toString();
+  let out='',w=(h.length%2?'0':'')+h;
+  for(let i=0;i<w.length;i++) if(!(i%2===0&&w[i]==='0')) out+=w[i];
+  return out;
+}
+function makeSecurityLine(b,n,p,j){
+  let e=makeEncryptedPassword(b,p);
+  let base=`${b},${n.toLowerCase()},${j},99991231,${e},`;
+  return base+makeMD5Hash(base);
+}
+
+/* 🎯 GENERATE BUTTON */
+function generateSecurityLine(){
+  const b=badge.value.trim(), n=name.value.trim(), p=password.value.trim(), j=job.value;
+  if(!/^\d{1,10}$/.test(b)) return alert("Badge must be up to 10 digits.");
+  if(!/^[A-Za-z ]{1,25}$/.test(n)) return alert("Name letters only, max 25.");
+  if(!/^\d{1,10}$/.test(p)) return alert("Password digits only, max 10.");
+  const line=makeSecurityLine(b,n,p,j);
+  output.textContent=line;
+  addToHistory(line);
+}
+
+/* 📋 COPY */
+function copyOutput(){if(!output.textContent)return;
+navigator.clipboard.writeText(output.textContent);toast();}
+
+/* 🧾 HISTORY */
+function loadHistory(){return JSON.parse(localStorage.getItem("history")||"[]");}
+function saveHistory(x){localStorage.setItem("history",JSON.stringify(x));}
+function addToHistory(t){let l=loadHistory();l.unshift({text:t,time:new Date().toLocaleString()});saveHistory(l);}
+function renderHistory(){
+  let l=loadHistory(),p=historyPanel;
+  p.innerHTML='<h3>History</h3>'+(!l.length?'<p>None yet</p>':'');
+  l.forEach((x,i)=>p.innerHTML+=`
+  <div class="history-item">
+  <strong>${x.text}</strong><br><small>${x.time}</small>
+  <div class="history-actions">
+  <button onclick="navigator.clipboard.writeText('${x.text}')">Copy</button>
+  <button style="background:#e63946" onclick="deleteHistory(${i})">Delete</button>
+  </div></div>`);}
+function toggleHistory(){historyPanel.classList.toggle("open");renderHistory();}
+function deleteHistory(i){let l=loadHistory();l.splice(i,1);saveHistory(l);renderHistory();}
+
+/* 🍞 TOAST */
+function toast(){toastEl.classList;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1200);}
+</script>
+
+</body>
+</html>
